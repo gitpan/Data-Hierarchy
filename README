@@ -1,9 +1,9 @@
-This is the README file for Data::Hierarchy, a module that helps generate
-output like "cvs annotate"
+This is the README file for Data::Hierarchy, a module that handles
+data in hierarchical structure.
 
 * Installation
 
-Algorithm::Annotate uses the stanard perl module install process:
+Data::Hierarchy uses the stanard perl module install process:
 
 % perl Makefile.PL
 % make

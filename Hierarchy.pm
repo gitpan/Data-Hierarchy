@@ -1,5 +1,5 @@
 package Data::Hierarchy;
-$VERSION = '0.17';
+$VERSION = '0.18';
 use strict;
 use Clone qw(clone);
 
@@ -166,22 +166,17 @@ sub find {
     my @items;
     my @datapoints = $self->descendents($key);
 
-    for (@datapoints) {
-	my $hash = $self->{hash}{$_};
+    for my $entry (@datapoints) {
 	my $matched = 1;
 	for (keys %$value) {
-	    if (substr ($_, 0, 1) eq '.') {
-		$matched = 0
-		    unless exists $self->{sticky}{$_}
-			&& $self->{sticky}{$_} =~ m/$value->{$_}/;
-	    }
-	    else {
-		$matched = 0
-		    unless exists $hash->{$_} && $hash->{$_} =~ m/$value->{$_}/;
-	    }
+	    my $lookat = substr ($_, 0, 1) eq '.' ?
+		$self->{sticky}{$entry} : $self->{hash}{$entry};
+	    $matched = 0
+		unless exists $lookat->{$_}
+			&& $lookat->{$_} =~ m/$value->{$_}/;
 	    last unless $matched;
 	}
-	push @items, $_
+	push @items, $entry
 	    if $matched;
     }
     return @items;

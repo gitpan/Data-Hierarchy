@@ -1,3 +1,7 @@
+[Changes for 0.18 - May 29, 2004]
+
+* Fix - find sticky values was not working.
+
 [Changes for 0.17 - Mar 18, 2004]
 
 * New - store_override for overriding existing values on the entry.
