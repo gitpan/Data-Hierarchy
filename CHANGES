@@ -1,3 +1,8 @@
+[Changes for 0.13 - Nov 4, 2003]
+
+* New - get_single and store_single.
+* Fix - get_* now return cloned hash to avoid being modified directly.
+
 [Changes for 0.12 - Oct 6, 2003]
 
 * New - Find descendents with a rule.

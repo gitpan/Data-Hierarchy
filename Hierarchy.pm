@@ -1,6 +1,7 @@
 package Data::Hierarchy;
-$VERSION = '0.12';
+$VERSION = '0.13';
 use strict;
+use Clone qw(clone);
 
 =head1 NAME
 
@@ -38,6 +39,11 @@ sub new {
     $self->{sep} ||= '/';
     $self->{hash} = shift;
     return $self;
+}
+
+sub store_single {
+    my ($self, $key, $value) = @_;
+    $self->{hash}{$key} = $value;
 }
 
 sub store {
@@ -96,6 +102,11 @@ sub find {
     return @items;
 }
 
+sub get_single {
+    my ($self, $key) = @_;
+    return clone ($self->{hash}{$key} || {});
+}
+
 sub get {
     my ($self, $key) = @_;
 
@@ -107,7 +118,7 @@ sub get {
 	 keys %{$self->{hash}};
 
     for (@datapoints) {
-	$value = {%$value, %{$self->{hash}{$_}}};
+	$value = {%$value, %{clone ($self->{hash}{$_})}};
     }
     return wantarray ? ($value, @datapoints) : $value;
 }
