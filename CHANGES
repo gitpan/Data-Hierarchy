@@ -1,4 +1,8 @@
-[Changes for 0.15 - Mar 8, 2003]
+[Changes for 0.16 - Mar 17, 2004]
+
+* Fix - get_descenents is unhappy with older versions of Data::Hierarchy.
+
+[Changes for 0.15 - Mar 8, 2004]
 
 * New - properties beginning with '.' are now sticky to the entry.
 * New - merge function to merge two Data::Hierarchy objects.

@@ -1,5 +1,5 @@
 package Data::Hierarchy;
-$VERSION = '0.15';
+$VERSION = '0.16';
 use strict;
 use Clone qw(clone);
 
@@ -99,7 +99,7 @@ sub _descendents {
 sub descendents {
     my ($self, $key) = @_;
     use Carp;
-    my $both = {%{$self->{hash}}, %{$self->{sticky} || ()}};
+    my $both = {%{$self->{hash}}, %{$self->{sticky} || {}}};
     return sort grep {$key.$self->{sep} eq substr($_.$self->{sep}, 0,
 						  length($key)+1)}
 	keys %$both;
