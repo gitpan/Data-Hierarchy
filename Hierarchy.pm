@@ -1,5 +1,5 @@
 package Data::Hierarchy;
-$VERSION = '0.10';
+$VERSION = '0.11';
 use strict;
 
 =head1 NAME
@@ -51,7 +51,8 @@ sub store_recursively {
     my ($self, $key, $value) = @_;
 
     $key =~ s/$self->{sep}$//;
-    my @datapoints = sort grep {$key.$self->{sep} eq substr($_, 0, length($key)+1)}
+    my @datapoints = sort grep {$key.$self->{sep} eq substr($_.$self->{sep}, 0,
+							    length($key)+1)}
 	 keys %{$self->{hash}};
 
     for (@datapoints) {
@@ -69,7 +70,8 @@ sub get {
     $key =~ s/$self->{sep}$//;
     my $value = {};
     # XXX: could build cached pointer for fast traversal
-    my @datapoints = sort grep {$_.$self->{sep} eq substr($key, 0, length($_)+1)}
+    my @datapoints = sort grep {$_.$self->{sep} eq substr($key.$self->{sep}, 0,
+							  length($_)+1)}
 	 keys %{$self->{hash}};
 
     for (@datapoints) {

@@ -2,7 +2,7 @@
 use Test::More qw(no_plan);
 use strict;
 BEGIN {
-use_ok 'Data::Heirarchy';
+use_ok 'Data::Hierarchy';
 }
 
 my $tree = Data::Hierarchy->new();
@@ -12,6 +12,9 @@ $tree->store ('/private/fnord', {otherinfo => 'fnord'});
 
 ok (eq_hash (scalar $tree->get ('/private/somewhere/deep'), {access => 'auth',
 							     type => 'pam'}));
+
+ok (eq_hash (scalar $tree->get ('/private'), {access => 'auth',
+					      type => 'pam'}));
 
 ok (eq_hash (scalar $tree->get ('/private/fnord/blah'), {access => 'auth',
 							 otherinfo => 'fnord',
