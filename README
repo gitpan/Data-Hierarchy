@@ -1,4 +1,4 @@
-This is the README file for Algorithm::Annotate, a module that helps generate
+This is the README file for Data::Hierarchy, a module that helps generate
 output like "cvs annotate"
 
 * Installation
@@ -11,12 +11,12 @@ Algorithm::Annotate uses the stanard perl module install process:
 
 * Latest version
 
-The latest Algorithm::Annotate could be found on cpan or at:
-http://svn.elixus.org/svnweb/repos/browse/member/clkao/Algorithm-Annotate/
+The latest Data::Hierarchy could be found on cpan or at:
+http://svn.elixus.org/svnweb/repos/browse/member/clkao/Data-Hierarchy/
 
 * Copyright
 
-Copyright 2003 by Chia-liang Kao clkao@clkao.org.
+Copyright 2003-2004 by Chia-liang Kao clkao@clkao.org.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
