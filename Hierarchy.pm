@@ -1,5 +1,5 @@
 package Data::Hierarchy;
-$VERSION = '0.11';
+$VERSION = '0.12';
 use strict;
 
 =head1 NAME
@@ -16,6 +16,8 @@ Data::Hierarchy - Handle data in a hierarchical structure
 
     # return actual data points in scalar context
     ($info, @fromwhere) = $tree->get ('/private/somewhere/deep');
+
+    my @items = $tree->find ('/', {access => qr/.*/});
 
     # override all children
     $tree->store_recursively ('/', {access => 'all'});
@@ -44,7 +46,14 @@ sub store {
     $key =~ s/$self->{sep}$//;
 
     my $oldvalue = $self->{hash}{$key} if exists $self->{hash}{$key};
-    $self->{hash}{$key} = {%{$oldvalue||{}}, %$value};
+    my $hash = {%{$oldvalue||{}}, %$value};
+    for (keys %$hash) {
+	delete $hash->{$_}
+	    unless defined $hash->{$_};
+    }
+
+    $self->{hash}{$key} = $hash;
+    delete $self->{hash}{$key} unless %{$self->{hash}{$key}};
 }
 
 sub store_recursively {
@@ -62,6 +71,29 @@ sub store_recursively {
     }
 
     $self->store ($key, $value);
+}
+
+sub find {
+    my ($self, $key, $value) = @_;
+    $key =~ s/$self->{sep}$//;
+    my @items;
+    my @datapoints = sort grep {$key.$self->{sep} eq substr($_.$self->{sep}, 0,
+							    length($key)+1)}
+	 keys %{$self->{hash}};
+
+    for (@datapoints) {
+	my $hash = $self->{hash}{$_};
+	my $matched = 1;
+	for (keys %$value) {
+	    unless (exists $hash->{$_} && $hash->{$_} =~ m/$value->{$_}/) {
+		$matched = 0;
+		last;
+	    }
+	}
+	push @items, $_
+	    if $matched;
+    }
+    return @items;
 }
 
 sub get {

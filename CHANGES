@@ -1,3 +1,8 @@
+[Changes for 0.12 - Oct 6, 2003]
+
+* New - Find descendents with a rule.
+* Fix - cleanup useless entries after store and store_recursively
+
 [Changes for 0.11 - Sep 26, 2003]
 
 * Fix an obvious edge case.
