@@ -1,3 +1,7 @@
+[Changes for 0.17 - Mar 18, 2004]
+
+* New - store_override for overriding existing values on the entry.
+
 [Changes for 0.16 - Mar 17, 2004]
 
 * Fix - get_descenents is unhappy with older versions of Data::Hierarchy.

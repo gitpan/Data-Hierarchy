@@ -1,5 +1,5 @@
 package Data::Hierarchy;
-$VERSION = '0.16';
+$VERSION = '0.17';
 use strict;
 use Clone qw(clone);
 
@@ -129,6 +129,26 @@ sub store {
     }
     return unless keys %$value;
     $self->_store_recursively ($key, $value, $self->{hash});
+    $self->_store ($key, $value);
+}
+
+sub store_override {
+    my ($self, $key, $value) = @_;
+
+    my ($ovalue, @datapoints) = $self->get ($key);
+    for (keys %$value) {
+	next unless defined $value->{$_};
+	if (exists $ovalue->{$_} && $ovalue->{$_} eq $value->{$_}) {
+	    # if the parent has the property already
+	    if ($#datapoints > 0 && exists $self->{hash}{$datapoints[-1]}{$_}) {
+		$value->{$_} = undef;
+	    }
+	    else {
+		delete $value->{$_};
+	    }
+	}
+    }
+    return unless keys %$value;
     $self->_store ($key, $value);
 }
 
