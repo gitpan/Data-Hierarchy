@@ -1,5 +1,5 @@
 package Data::Hierarchy;
-$VERSION = '0.18';
+$VERSION = '0.19';
 use strict;
 use Clone qw(clone);
 
@@ -36,28 +36,37 @@ filesystem).
 
 sub new {
     my $class = shift;
-    my $self = bless {}, $class;
+    # allow shorthand of ->new({...}) to mean ->new(hash => {...})
+    unshift @_, 'hash' if @_ % 2;
+
+    my $self = bless {@_}, $class;
     $self->{sep} ||= '/';
-    $self->{hash} = shift || {};
-    $self->{sticky} = {};
+    $self->{hash} ||= {};
+    $self->{sticky} ||= {};
     return $self;
+}
+
+sub key_safe {
+    use Carp;
+    confess 'key unsafe'
+	if length ($_[1]) > 1 and rindex($_[1], $_[0]->{sep}) == length ($_[1]);
+    $_[1] =~ s/\Q$_[0]->{sep}\E+$//;
 }
 
 sub store_single {
     my ($self, $key, $value) = @_;
-    $key =~ s/$self->{sep}$//;
+    $self->key_safe ($key);
     $self->{hash}{$key} = $value;
 }
 
 sub _store {
     my ($self, $key, $value) = @_;
-
-    $key =~ s/$self->{sep}$//;
+    $self->key_safe ($key);
 
     my $oldvalue = $self->{hash}{$key} if exists $self->{hash}{$key};
     my $hash = {%{$oldvalue||{}}, %$value};
     for (keys %$hash) {
-	if (substr ($_, 0, 1) eq '.') {
+	if (index($_, '.') == 0) {
 	    defined $hash->{$_} ?
 		$self->{sticky}{$key}{$_} = $hash->{$_} :
 		delete $self->{sticky}{$key}{$_};
@@ -91,8 +100,7 @@ sub merge {
 
 sub _descendents {
     my ($self, $hash, $key) = @_;
-    return sort grep {$key.$self->{sep} eq substr($_.$self->{sep}, 0,
-						  length($key)+1)}
+    return sort grep {index($_.$self->{sep}, $key.$self->{sep}) == 0}
 	keys %$hash;
 }
 
@@ -100,15 +108,18 @@ sub descendents {
     my ($self, $key) = @_;
     use Carp;
     my $both = {%{$self->{hash}}, %{$self->{sticky} || {}}};
-    return sort grep {$key.$self->{sep} eq substr($_.$self->{sep}, 0,
-						  length($key)+1)}
+
+    # If finding for everything, don't bother grepping
+    return sort keys %$both unless length($key);
+
+    return sort grep {index($_.$self->{sep}, $key.$self->{sep}) == 0}
 	keys %$both;
 }
 
 sub _store_recursively {
     my ($self, $key, $value, $hash) = @_;
 
-    $key =~ s/$self->{sep}$//;
+    $self->key_safe ($key);
     my @datapoints = $self->_descendents ($hash, $key);
 
     for (@datapoints) {
@@ -118,14 +129,22 @@ sub _store_recursively {
     }
 }
 
-sub store {
-    my ($self, $key, $value) = @_;
+# use store_fast to avoid trimming duplicated value with ancestors
+sub store_fast {
+    my $self = shift;
+    $self->store (@_, 1);
+}
 
-    my $ovalue = $self->get ($key);
-    for (keys %$value) {
-	next unless defined $value->{$_};
-	delete $value->{$_}
-	    if exists $ovalue->{$_} && $ovalue->{$_} eq $value->{$_};
+sub store {
+    my ($self, $key, $value, $fast) = @_;
+
+    unless ($fast) {
+	my $ovalue = $self->get ($key);
+	for (keys %$value) {
+	    next unless defined $value->{$_};
+	    delete $value->{$_}
+		if exists $ovalue->{$_} && $ovalue->{$_} eq $value->{$_};
+	}
     }
     return unless keys %$value;
     $self->_store_recursively ($key, $value, $self->{hash});
@@ -152,6 +171,7 @@ sub store_override {
     $self->_store ($key, $value);
 }
 
+# Useful for removing sticky properties.
 sub store_recursively {
     my ($self, $key, $value) = @_;
 
@@ -162,14 +182,14 @@ sub store_recursively {
 
 sub find {
     my ($self, $key, $value) = @_;
-    $key =~ s/$self->{sep}$//;
+    $self->key_safe ($key);
     my @items;
     my @datapoints = $self->descendents($key);
 
     for my $entry (@datapoints) {
 	my $matched = 1;
 	for (keys %$value) {
-	    my $lookat = substr ($_, 0, 1) eq '.' ?
+	    my $lookat = (index($_, '.') == 0) ?
 		$self->{sticky}{$entry} : $self->{hash}{$entry};
 	    $matched = 0
 		unless exists $lookat->{$_}
@@ -189,13 +209,10 @@ sub get_single {
 
 sub get {
     my ($self, $key, $rdonly) = @_;
-    use Carp;
-    confess unless $key;
-    $key =~ s/$self->{sep}$//;
+    $self->key_safe ($key);
     my $value = {};
     # XXX: could build cached pointer for fast traversal
-    my @datapoints = sort grep {$_.$self->{sep} eq substr($key.$self->{sep}, 0,
-							  length($_)+1)}
+    my @datapoints = sort grep {index($key.$self->{sep}, $_.$self->{sep}) == 0}
 	 keys %{$self->{hash}};
 
     for (@datapoints) {
