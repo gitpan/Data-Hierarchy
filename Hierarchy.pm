@@ -1,7 +1,7 @@
 package Data::Hierarchy;
-$VERSION = '0.21';
+$VERSION = '0.22';
 use strict;
-use Clone qw(clone);
+use Storable qw(dclone);
 
 =head1 NAME
 
@@ -210,7 +210,7 @@ sub find {
 
 sub get_single {
     my ($self, $key) = @_;
-    return clone ($self->{hash}{$key} || {});
+    return dclone($self->{hash}{$key} || {});
 }
 
 sub get {
@@ -223,12 +223,12 @@ sub get {
 
     for (@datapoints) {
 	my $newv = $self->{hash}{$_};
-	$newv = clone $newv unless $rdonly;
+	$newv = dclone($newv) unless $rdonly;
 	$value = {%$value, %$newv};
     }
     if (exists $self->{sticky}{$key}) {
 	my $newv = $self->{sticky}{$key};
-	$newv = clone $newv unless $rdonly;
+	$newv = dclone($newv) unless $rdonly;
 	$value = {%$value, %$newv}
     }
     return wantarray ? ($value, @datapoints) : $value;
