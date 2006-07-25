@@ -7,6 +7,9 @@ WriteMakefile(
     NAME                => 'Data::Hierarchy',
     VERSION_FROM        => 'Hierarchy.pm',
     DISTNAME            => 'Data-Hierarchy',
+    PREREQ_PM           => {
+        Test::Exception => '0',
+    },
     dist                => {
         COMPRESS        => 'gzip -9',
         SUFFIX          => '.gz',

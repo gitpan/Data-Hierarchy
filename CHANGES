@@ -1,6 +1,8 @@
-[Changes for 0.22 - Jun 52, 2006]
+[Changes for 0.30 - Jul 25, 2006]
 
-* Use Storable::dclone rather than Clone::clone.
+* Big rewrite, simplifying the API and documenting everything.
+
+* Added to_relative (to help with SVK floating checkouts).
 
 [Changes for 0.21 - Nov 10, 2004]
 
