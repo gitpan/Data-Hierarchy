@@ -1,5 +1,5 @@
 package Data::Hierarchy;
-$VERSION = '0.31';
+$VERSION = '0.32';
 use strict;
 use Storable qw(dclone);
 # XXX consider using Moose
@@ -129,7 +129,7 @@ it will print 'top'.
 sub store {
     my $self = shift;
     $self->_store_no_cleanup(@_);
-    $self->_remove_redundant_properties_and_undefs;
+    $self->_remove_redundant_properties_and_undefs($_[0]);
 }
 
 # Internal method.
@@ -338,9 +338,24 @@ sub _store {
 sub _ancestors {
     my ($self, $hash, $path) = @_;
 
+    my @ancestors;
+    push @ancestors, '' if exists $hash->{''};
+
+    # Special case the root.
+    return @ancestors if $path eq '';
+
+    my @parts = split m{\Q$self->{sep}}, $path;
+    # Remove empty string at the front.
+    shift @parts;
+
+    my $current = '';
+    for my $part (@parts) {
+        $current .= $self->{sep} . $part;
+        push @ancestors, $current if exists $hash->{$current};
+    }
+
     # XXX: could build cached pointer for fast traversal
-    return sort grep {index($path.$self->{sep}, $_.$self->{sep}) == 0}
-	keys %$hash;
+    return @ancestors;
 }
 
 # Internal method.
@@ -429,13 +444,14 @@ sub _parent {
 
 sub _remove_redundant_properties_and_undefs {
     my $self = shift;
-
+    my $prefix = shift;
     # This is not necessarily the most efficient way to implement this
     # cleanup, but that can be fixed later.
 
     # By sorting the keys, we guarantee that we never get to a path
     # before we've dealt with all of its ancestors.
     for my $path (sort keys %{$self->{hash}}) {
+        next if $prefix && index($prefix.$self->{sep}, $path.$self->{sep}) != 0;
         my $props = $self->{hash}{$path};
 
         # First check for undefs.
