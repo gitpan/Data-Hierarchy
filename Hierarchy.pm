@@ -1,5 +1,5 @@
 package Data::Hierarchy;
-$VERSION = '0.32';
+$VERSION = '0.33';
 use strict;
 use Storable qw(dclone);
 # XXX consider using Moose
@@ -240,7 +240,7 @@ sub merge {
     my %datapoints = map {$_ => 1} ($self->_all_descendents ($path),
 				    $other->_all_descendents ($path));
     for my $datapoint (sort keys %datapoints) {
-	my $my_props = $self->get ($datapoint);
+	my $my_props = $self->get ($datapoint, 1);
 	my $other_props = $other->get ($datapoint);
 	for (keys %$my_props) {
 	    $other_props->{$_} = undef
@@ -311,7 +311,7 @@ sub _path_safe {
 sub _store {
     my ($self, $path, $new_props) = @_;
 
-    my $old_props = $self->{hash}{$path} if exists $self->{hash}{$path};
+    my $old_props = exists $self->{hash}{$path} ? $self->{hash}{$path} : undef;
     my $merged_props = {%{$old_props||{}}, %$new_props};
     for (keys %$merged_props) {
 	if (index($_, '.') == 0) {
@@ -467,7 +467,7 @@ sub _remove_redundant_properties_and_undefs {
         if (length $path) {
             my $parent = $self->_parent($path);
 
-            my $parent_props = $self->get($parent);
+            my $parent_props = $self->get($parent, 1);
 
             for my $name (keys %$props) {
                 # We've already dealt with undefs in $props, so we
