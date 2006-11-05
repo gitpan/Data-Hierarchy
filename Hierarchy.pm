@@ -1,5 +1,5 @@
 package Data::Hierarchy;
-$VERSION = '0.33';
+$VERSION = '0.34';
 use strict;
 use Storable qw(dclone);
 # XXX consider using Moose
@@ -346,12 +346,16 @@ sub _ancestors {
 
     my @parts = split m{\Q$self->{sep}}, $path;
     # Remove empty string at the front.
-    shift @parts;
-
     my $current = '';
+    unless (length $parts[0]) {
+	shift @parts;
+	$current .= $self->{sep};
+    }
+
     for my $part (@parts) {
-        $current .= $self->{sep} . $part;
+        $current .= $part;
         push @ancestors, $current if exists $hash->{$current};
+        $current .= $self->{sep};
     }
 
     # XXX: could build cached pointer for fast traversal
